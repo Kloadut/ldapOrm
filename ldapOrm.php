@@ -203,7 +203,7 @@ class LdapEntry extends LdapConnection
     
     // Populate
     if ($model = getModelFromMethod('populate'))
-      $this->populate($model, $arguments[0], $arguments[1]);
+      $this->populate($model, $arguments[0]);
 
     // Delete
     if ($model = getModelFromMethod('delete'))
@@ -302,12 +302,11 @@ class LdapEntry extends LdapConnection
    *
    * @access public
    * @param string $model - The model name
-   * @param string $key - The attribute name
-   * @param string $model - The attribute value
+   * @param array $attributeArray - The attribute key with its value
    */
-  public function populate($model, $key, $value) 
+  public function populate($model, $attributeArray) 
   {
-    $result = $this->$model->findOneBy($key, $value);
+    $result = $this->$model->findOneBy($attributeArray);
 
     foreach ($result as $attribute => $attrValue) 
     {
@@ -382,18 +381,17 @@ class LdapEntry extends LdapConnection
    * Get an LDAP entry with an attribute and its value
    *
    * @access public
-   * @param string $attribute
-   * @param string $value
+   * @param array $attributeArray - The attribute key with its value
    * @param boolean $toArray
    * @return array|boolean - Filtered array by default, multidimensionnal array, or false
    */
-  public function findOneBy($attribute, $value, $toArray = true) 
+  public function findOneBy($attributeArray, $toArray = true) 
   {
     $result = ldap_search
               (
                   $this->connection, 
                   $this->arrayToDn($this->searchPath).$this->baseDn, 
-                  "(".$attribute."=".$value.")", 
+                  "(".$this->arrayToDn($attributeArray, false).")", 
                   $this->attributesToFetch
               );
 
@@ -650,7 +648,7 @@ class LdapEntry extends LdapConnection
    */
   protected function validateUniquenessOf($attribute, $model) 
   {
-    $alreadyExists = $this->findOneBy($attribute, $this->$model->$attribute);
+    $alreadyExists = $this->findOneBy(array($attribute => $this->$model->$attribute));
     if (!empty($alreadyExists))
     {
       $actualCn = $this->$model->cn;

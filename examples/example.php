@@ -10,7 +10,7 @@ $server = 'localhost';
 // Set the domain that will generate the 'dc' LDAP prefixes
 $domain = 'example.org';
 
-// Define your model directory (all the files inside will be include as models)
+// Define your model directory (all the files inside will be automaticaly include as models)
 $modelPath = dirname(__FILE__).'/models';
 
 

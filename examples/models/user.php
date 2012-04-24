@@ -71,9 +71,11 @@ class User extends LdapEntry
     
     public function beforeSave() 
     {
-        $this->cn           = $this->givenname.' '.$this->sn;
-        $this->displayname  = $this->givenname.' '.$this->sn;
-        $this->dnPattern    = array('cn' => $this->givenname.' '.$this->sn);
+        $fullname = $this->givenname.' '.$this->sn;
+
+        $this->cn           = $fullname;
+        $this->displayname  = $fullname;
+        $this->dnPattern    = array('cn' => $fullname);
     }
 
     public function afterSave() {}
