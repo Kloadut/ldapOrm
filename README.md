@@ -25,12 +25,12 @@ There is some settings to do in your model file:
 * Name your file in lowercase, with the exact name of your model, e.g `mymodel.php`
 * Initialize the model class by calling `class Mymodel extends LdapEntry {...}`
 
-**The model class' first letter name must be uppercased and must correspond to the model filename.**
+**The model name's first letter must be uppercased and must correspond to the model filename.**
 
 * The `$options` array contains 3 parameters:
-  - dnPattern: contains the key attribute of the DN
-  - searchPath: contains the name of the group if exists
-  - objectClass: objectClasses of the model
+  - **dnPattern**: contains the key attribute of the DN
+  - **searchPath**: contains the name of the group if exists
+  - **objectClass**: objectClasses of the model
 
 ```PHP
 $options = array
