@@ -32,7 +32,7 @@ There is some settings to do in your model file:
   - searchPath: contains the name of the group if exists
   - objectClass: objectClasses of the model
 
-```php
+```PHP
 $options = array
            (
               'dnPattern'     => array('cn' => ''),
@@ -48,7 +48,7 @@ $options = array
   - **maxLength**:  (default 1024) - Maximum length of the field value
   - **pattern**:    (default null) - Pattern that the field must match, regex style
 
-```php
+```PHP
 $fields = array
 (
     'mymailfield' => array
