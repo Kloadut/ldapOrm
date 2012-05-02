@@ -190,78 +190,44 @@ class LdapEntry extends LdapConnection
   function __call($method, $arguments) 
   {
     // Get
-    if ($result = getModelAndAttributeFromMethod('get')) 
+    if ($result = $this->getModelAndAttributeFromMethod('get')) 
       return $this->$result['model']->$result['attr'];
     
     // Set
-    if ($result = getModelAndAttributeFromMethod('set'))
+    if ($result = $this->getModelAndAttributeFromMethod('set'))
       $this->$result['model']->$result['attr'] = $arguments[0];
     
     // Save
-    if ($model = getModelFromMethod('save'))
+    if ($model = $this->getModelFromMethod('save'))
       $this->save($model);
     
     // Populate
-    if ($model = getModelFromMethod('populate'))
+    if ($model = $this->getModelFromMethod('populate'))
       $this->populate($model, $arguments[0]);
 
     // Delete
-    if ($model = getModelFromMethod('delete'))
+    if ($model = $this->getModelFromMethod('delete'))
     {
       $dn = $this->arrayToDn(array_merge($this->$model->options['dnPattern'], $arguments[0], $this->$model->options['searchPath'])).$this->baseDn;
       return $this->delete($dn);
     }
 
     // Validate uniqueness
-    if ($result = getModelAndAttributeFromMethod('validateUniquenessOf'))
+    if ($result = $this->getModelAndAttributeFromMethod('validateUniquenessOf'))
       return $this->validateUniquenessOf($result['attr'], $result['model']);
     
     // Validate length
-    if ($result = getModelAndAttributeFromMethod('validateLengthOf'))
+    if ($result = $this->getModelAndAttributeFromMethod('validateLengthOf'))
       return $this->validateLengthOf($result['attr'], $result['model'], $arguments[0], $arguments[1]);
     
     // Validate format
-    if ($result = getModelAndAttributeFromMethod('validateFormatOf'))
+    if ($result = $this->getModelAndAttributeFromMethod('validateFormatOf'))
       return $this->validateFormatOf($result['attr'], $result['model'], $arguments[0]);
 
 
     return false;
     
-    /**
-     * Local function to get model and attribute from the self-made method
-     *
-     * @access public
-     * @param string $methodName - The undeclared self-made name
-     * @return array|boolean - An array containing model name and attribute name, or false
-     */
-    function getModelAndAttributeFromMethod($methodName) 
-    {
-      if (preg_match("#^$methodName#", $method))
-      {
-        $substract = strlen($methodName) - 3;
-        $modelAndAttr = substr($method,$substract,strlen($method)-$substract);
-        $modelAndAttr{0} = strtolower($modelAndAttr{0});
-        $result['model'] = preg_replace('#[A-Z][a-z0-9]+#', '', $modelAndAttr);
-        $result['attr'] = strtolower(preg_replace("#$model#", '', $modelAndAttr));
-        return $result;
-      } else return false;
-    }
-
-    /**
-     * Local function to get model from the self-made method
-     *
-     * @access public
-     * @param string $methodName - The self-made method name
-     * @return string|boolean - The model name or false
-     */
-    function getModelFromMethod($methodName)
-    {
-      if (preg_match("#^$methodName#", $method))
-      {
-        $substract = strlen($methodName) - 3;
-        return strtolower(substr($method,$substract,strlen($method)-$substract));
-      } else return false;
-    }
+    
   }
 
   /**

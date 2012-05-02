@@ -2,7 +2,7 @@
 
 class User extends LdapEntry 
 {
-    protected static $options = array
+    var $options = array
     (
         'dnPattern'     => array('cn' => ''),
         'searchPath'    => array('ou' => 'users'),
@@ -10,7 +10,7 @@ class User extends LdapEntry
     );
 
 
-    protected static $fields = array
+    var $fields = array
     (
         'description' => array
         (       
@@ -18,34 +18,34 @@ class User extends LdapEntry
         ),
         'givenname' => array
         (       
-            'required' => true,
+            'required'  => true,
             'minLength' => 1,
             'maxlength' => 30
         ),
         'sn' => array
         (       
-            'required' => true,
+            'required'  => true,
             'minLength' => 1,
             'maxlength' => 30
         ),
         'displayname' => array
         (       
-            'required' => true,
+            'required'  => true,
             'unique'    => true,
             'minLength' => 2,
             'maxlength' => 62
         ),
         'cn' => array
         (       
-            'required' => true,
+            'required'  => true,
             'unique'    => true,
             'minLength' => 2,
             'maxlength' => 62
         ),
         'uid' => array
         (       
-            'required' => true,
-            'unique' => true,
+            'required'  => true,
+            'unique'    => true,
             'minLength' => 2,
             'maxlength' => 30,
             'unique'    => true
@@ -56,16 +56,16 @@ class User extends LdapEntry
         ),
         'mail' => array
         (       
-            'required' => true,
+            'required'  => true,
             'unique'    => true,
             'maxlength' => 100,
-            'pattern' => '#^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,6}$#'
+            'pattern'   => '#^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,6}$#'
         ),
         'mailalias' => array
         (   
-            'required' => false,
+            'required'  => false,
             'maxlength' => 100,
-            'pattern' => '#^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,6}$#'
+            'pattern'   => '#^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,6}$#'
         )
     );
     
