@@ -194,44 +194,81 @@ class LdapEntry extends LdapConnection
   function __call($method, $arguments) 
   {
     // Get
-    if ($result = $this->getModelAndAttributeFromMethod('get')) 
+    if ($result = $this->getModelAndAttributeFromMethod('get', $method)) 
       return $this->$result['model']->$result['attr'];
     
     // Set
-    if ($result = $this->getModelAndAttributeFromMethod('set'))
+    if ($result = $this->getModelAndAttributeFromMethod('set', $method))
       $this->$result['model']->$result['attr'] = $arguments[0];
     
     // Save
-    if ($model = $this->getModelFromMethod('save'))
+    if ($model = $this->getModelFromMethod('save', $method))
       $this->save($model);
     
     // Populate
-    if ($model = $this->getModelFromMethod('populate'))
+    if ($model = $this->getModelFromMethod('populate', $method))
       $this->populate($model, $arguments[0]);
 
     // Delete
-    if ($model = $this->getModelFromMethod('delete'))
+    if ($model = $this->getModelFromMethod('delete', $method))
     {
       $dn = $this->arrayToDn(array_merge($this->$model->options['dnPattern'], $arguments[0], $this->$model->options['searchPath'])).$this->baseDn;
       return $this->delete($dn);
     }
 
     // Validate uniqueness
-    if ($result = $this->getModelAndAttributeFromMethod('validateUniquenessOf'))
+    if ($result = $this->getModelAndAttributeFromMethod('validateUniquenessOf', $method))
       return $this->validateUniquenessOf($result['attr'], $result['model']);
     
     // Validate length
-    if ($result = $this->getModelAndAttributeFromMethod('validateLengthOf'))
+    if ($result = $this->getModelAndAttributeFromMethod('validateLengthOf', $method))
       return $this->validateLengthOf($result['attr'], $result['model'], $arguments[0], $arguments[1]);
     
     // Validate format
-    if ($result = $this->getModelAndAttributeFromMethod('validateFormatOf'))
+    if ($result = $this->getModelAndAttributeFromMethod('validateFormatOf', $method))
       return $this->validateFormatOf($result['attr'], $result['model'], $arguments[0]);
 
 
     return false;
     
-    
+  }
+
+  /**
+   * Local function to get model and attribute from the self-made method
+   *
+   * @access public
+   * @param string $methodName - The undeclared self-made name
+   * @param string $method - The full method name
+   * @return array|boolean - An array containing model name and attribute name, or false
+   */
+  public function getModelAndAttributeFromMethod($methodName, $method)
+  {
+    if (preg_match('#^'.$methodName.'#', $method))
+    {
+      $substract = strlen($methodName);
+      $modelAndAttr = substr($method,$substract,strlen($method)-$substract);
+      $modelAndAttr{0} = strtolower($modelAndAttr{0});
+      $result['model'] = preg_replace('#[A-Z][a-z0-9]+#', '', $modelAndAttr);
+      $result['attr'] = strtolower(preg_replace("#$model#", '', $modelAndAttr));
+      return $result;
+    } else return false;
+  }
+
+  /**
+   * Local function to get model from the self-made method
+   *
+   * @access public
+   * @param string $methodName - The self-made method name
+   * @param string $method - The full method name
+   * @return string|boolean - The model name or false
+   */
+  public function getModelFromMethod($methodName, $method)
+  {
+    if (preg_match('#^'.$methodName.'#', $method))
+    {
+      $substract = strlen($methodName);
+      return strtolower(substr($method,$substract,strlen($method)-$substract));
+    } else return false;
   }
 
   /**
@@ -535,24 +572,26 @@ class LdapEntry extends LdapConnection
   protected function entryToArray($result) 
   {
     $resultArray = array();
-    $entry = ldap_first_entry($this->connection, $result);
-    $attr = ldap_first_attribute($this->connection, $entry);
-    while ($attr) 
+    if($entry = ldap_first_entry($this->connection, $result))
     {
-      $val = ldap_get_values_len($this->connection, $entry, $attr);
-      if (array_key_exists('count', $val) AND $val['count'] == 1)
-        $resultArray[strtolower($attr)] = $val[0];
-      else 
+      $attr = ldap_first_attribute($this->connection, $entry);
+      while ($attr) 
       {
-        unset($val['count']);
-        $resultArray[strtolower($attr)] = $val;
+        $val = ldap_get_values_len($this->connection, $entry, $attr);
+        if (array_key_exists('count', $val) AND $val['count'] == 1)
+          $resultArray[strtolower($attr)] = $val[0];
+        else 
+        {
+          unset($val['count']);
+          $resultArray[strtolower($attr)] = $val;
+        }
+
+
+        $attr = ldap_next_attribute($this->connection, $entry);
       }
-
-
-      $attr = ldap_next_attribute($this->connection, $entry);
-    }
-      
-    return $resultArray;
+        
+      return $resultArray;
+      } else return array();
   }
 
   /**

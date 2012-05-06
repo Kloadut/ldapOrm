@@ -18,6 +18,9 @@ $modelPath = dirname(__FILE__).'/models';
 $ldap = new LdapEntry($server, $domain, $modelPath);
 
 
+// CONNECT
+
+
 // Assuming you have 'User' model, you can try
 $ldap->setUserGivenname('John');
 $ldap->setUserSn('Doe');
