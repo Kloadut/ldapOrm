@@ -106,7 +106,7 @@ class LdapConnection
    */
   protected function arrayToDn($array, $trailingComma = true) 
   {
-    $result = "";
+    $result = '';
     if (!empty($array)) 
     {
       $i = 0;
@@ -203,11 +203,11 @@ class LdapEntry extends LdapConnection
     
     // Save
     if ($model = $this->getModelFromMethod('save', $method))
-      $this->save($model);
+      return $this->save($model);
     
     // Populate
     if ($model = $this->getModelFromMethod('populate', $method))
-      $this->populate($model, $arguments[0]);
+      return $this->populate($model, $arguments[0]);
 
     // Delete
     if ($model = $this->getModelFromMethod('delete', $method))
@@ -249,7 +249,7 @@ class LdapEntry extends LdapConnection
       $modelAndAttr = substr($method,$substract,strlen($method)-$substract);
       $modelAndAttr{0} = strtolower($modelAndAttr{0});
       $result['model'] = preg_replace('#[A-Z][a-z0-9]+#', '', $modelAndAttr);
-      $result['attr'] = strtolower(preg_replace("#$model#", '', $modelAndAttr));
+      $result['attr'] = strtolower(preg_replace('#'.$result['model'].'#', '', $modelAndAttr));
       return $result;
     } else return false;
   }
@@ -435,11 +435,11 @@ class LdapEntry extends LdapConnection
     if ($this->validate($model)) 
     {
 
-      if (isset($this->$model->actualDn))  
+      if (isset($this->$model->actualDn))
         return $this->update($objectArray);
-      else 
+      else
         return $this->create($objectArray);   
-           
+
       $this->$model->afterSave();
 
       return true;
@@ -464,6 +464,8 @@ class LdapEntry extends LdapConnection
 
     if (!ldap_add($this->connection, $attributesArray['newDn'], $newEntry))
       return $this->ldapError();
+    else
+      return true;
   }
 
   /**
@@ -479,9 +481,10 @@ class LdapEntry extends LdapConnection
 
     if (ldap_rename($this->connection, $attributesArray['actualDn'], $attributesArray['newRdn'], null, true)) 
     {
-      if (!ldap_mod_replace($this->connection, $attributesArray['newDn'], $modEntry)) {
+      if (!ldap_mod_replace($this->connection, $attributesArray['newDn'], $modEntry))
         $this->ldapError();
-      }
+      else
+        return true;
     }
     else $this->ldapError();
   }
@@ -497,6 +500,8 @@ class LdapEntry extends LdapConnection
   {
     if (!ldap_delete($this->connection, $dn))
       $this->ldapError();
+    else
+      return true;
   }
 
   /**
@@ -657,14 +662,13 @@ class LdapEntry extends LdapConnection
    */
   protected function validateUniquenessOf($attribute, $model) 
   {
+    if ($attribute === 'cn')
+      return true;
+         
     $alreadyExists = $this->findOneBy(array($attribute => $this->$model->$attribute));
     if (!empty($alreadyExists))
-    {
-      $actualCn = $this->$model->cn;
-      $existingCn = $alreadyExists['cn'];
-
-      return $existingCn === $actualCn;
-    }
+      return 'cn='.$alreadyExists['cn'] === $this->arrayToDn($this->$model->actualDn, false);
+      
     else return true;
   }
 
